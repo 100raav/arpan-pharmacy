@@ -12,7 +12,7 @@ Data is stored locally in your browser using `localStorage`.
 
 ## Live Demo
 Check out the live version here:  
-**[https://arpan-pharmacy.vercel.app](https://arpan-pharmacy.vercel.app)**  
+**[https://arpan-pharmacy.vercel.app/](https://arpan-pharmacy.vercel.app/)**  
 
 
 ## Technologies Used
