@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arpan Pharmacy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js 4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf2 100%);
+            min-height: 100vh;
+            padding-bottom: 20px;
+            margin: 0;
+            position: relative;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #0d6efd !important;
+        }
+        .clock {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 500;
+            color: #0d6efd;
+            border: 1px solid rgba(13,110,253,0.2);
+        }
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(5px);
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card-header {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            border: none;
+            border-radius: 50px;
+            padding: 8px 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+            transform: scale(1.02);
+        }
+        .btn-outline-primary {
+            border-radius: 50px;
+            padding: 8px 25px;
+            font-weight: 500;
+        }
+        .table {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .table thead {
+            background: #0d6efd;
+            color: white;
+        }
+        .table tbody tr { transition: background 0.2s; }
+        .table tbody tr:hover { background: rgba(13,110,253,0.05); }
+        .expired-row {
+            background: rgba(220,53,69,0.15) !important;
+            border-left: 5px solid #dc3545;
+        }
+        .lowusage-row {
+            background: rgba(13,202,240,0.15) !important;
+            border-left: 5px solid #0dcaf0;
+        }
+        .badge-expired {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+        }
+        .badge-lowusage {
+            background: #0dcaf0;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+        }
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .modal-content { border-radius: 20px; }
+        .modal-header {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+        .btn-close { filter: brightness(0) invert(1); }
+        /* Enhanced receipt styling - outer border removed */
+        .receipt-compact {
+            font-family: 'Courier New', monospace;
+            width: 300px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            font-size: 12px;
+            line-height: 1.4;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .receipt-compact h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 8px;
+        }
+        .receipt-compact .store-details {
+            text-align: center;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+        .receipt-compact table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .receipt-compact th {
+            border-bottom: 1px solid #333;
+            padding: 5px 2px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .receipt-compact td {
+            padding: 4px 2px;
+            border-bottom: 1px dotted #aaa;
+        }
+        .receipt-compact .total-row {
+            font-weight: bold;
+            border-top: 2px solid #333;
+            margin-top: 5px;
+        }
+        .receipt-compact .signature {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            border-top: 1px dashed #333;
+            padding-top: 15px;
+        }
+        .receipt-compact .footer-thanks {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #receipt-print-area, #receipt-print-area * { visibility: visible; }
+            #receipt-print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                background: white;
+            }
+            .no-print { display: none; }
+        }
+        /* Dashboard summary cards */
+        .summary-card {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .summary-card .label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .small-chart {
+            height: 250px;
+        }
+        .due-highlight {
+            background-color: #fff3cd !important;
+        }
+        /* Password toggle */
+        .password-toggle {
+            position: relative;
+        }
+        .password-toggle .toggle-eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
+        /* Login overlay - full screen and centered */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        /* Toast notification */
+        #toastMessage {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 16px;
+            position: fixed;
+            z-index: 10000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 17px;
+            opacity: 0;
+            transition: opacity 0.5s, visibility 0.5s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        #toastMessage.show {
+            visibility: visible;
+            opacity: 1;
+        }
+        .toast-success { background-color: #28a745; }
+        .toast-error { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <!-- Toast container -->
+    <div id="toastMessage"></div>
+
+    <!-- Login Overlay (centered) -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h3 class="text-center mb-4"><i class="fas fa-lock me-2"></i>Admin Login</h3>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" id="adminUser" value="" placeholder="Enter username">
+            </div>
+            <div class="mb-3 password-toggle">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="adminPass" value="" placeholder="Enter password">
+                <i class="fas fa-eye toggle-eye" id="togglePassword"></i>
+            </div>
+            <button class="btn btn-primary w-100" id="loginBtn">Login</button>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until login) -->
+    <div id="mainApp" style="display: none;">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg bg-transparent py-3">
+            <div class="container">
+                <a class="navbar-brand" href="#"><i class="fas fa-clinic-medical me-2"></i>Arpan Pharmacy</a>
+                <div class="ms-auto d-flex align-items-center">
+                    <div class="clock me-3" id="liveClock"></div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </div>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="#" data-section="dashboard"><i class="fas fa-chart-line me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-section="medicines"><i class="fas fa-pills me-1"></i>Medicines</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-section="patients"><i class="fas fa-users me-1"></i>Patients</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-section="billing"><i class="fas fa-file-invoice me-1"></i>Billing</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" data-section="due"><i class="fas fa-credit-card me-1"></i>Due Payments</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mt-4">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="content-section" style="display: none;">
+                <h2 class="fw-bold mb-4"><i class="fas fa-chart-pie me-2"></i>Dashboard</h2>
+                <!-- Summary Cards -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div class="value" id="totalMedicinesCount">0</div>
+                            <div class="label">Total Medicines (Qty)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div class="value" id="totalEarningsLifetime">₹0</div>
+                            <div class="label">Lifetime Earnings</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="summary-card">
+                            <div class="value" id="totalPatientsCount">0</div>
+                            <div class="label">Total Patients</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Date Filters -->
+                <div class="filter-section">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label">Quick Filter</label>
+                            <select class="form-select" id="dashboardDatePreset">
+                                <option value="24h">Last 24 Hours</option>
+                                <option value="7d" selected>Last 7 Days</option>
+                                <option value="1m">Last 1 Month</option>
+                                <option value="3m">Last 3 Months</option>
+                                <option value="6m">Last 6 Months</option>
+                                <option value="1y">Last 1 Year</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="dashboardFromDate">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="dashboardToDate">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" id="applyDashboardFilter"><i class="fas fa-filter"></i> Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Earnings Over Time</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="earningsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-header">Medicines Sold Over Time</div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="medicinesSoldChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mx-auto">
+                        <div class="card">
+                            <div class="card-header">Patient Gender Distribution</div>
+                            <div class="card-body">
+                                <div class="chart-container small-chart">
+                                    <canvas id="genderChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medicines Section -->
+            <div id="medicinesSection" class="content-section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold"><i class="fas fa-pills me-2"></i>Medicines Inventory</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMedicineModal"><i class="fas fa-plus me-2"></i>Add Medicine</button>
+                </div>
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="medicineNameFilter" placeholder="Filter by name...">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="medicineShelfFilter" placeholder="Filter by shelf...">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary me-2" id="showLowUsageBtn"><i class="fas fa-chart-line me-1"></i>Low Usage (Blue)</button>
+                            <button class="btn btn-outline-danger" id="showExpiredBtn"><i class="fas fa-exclamation-triangle me-1"></i>Expired (Red)</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Medicines Table -->
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-table me-2"></i>Medicine List</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="medicinesTable">
+                                <thead><tr><th>ID</th><th>Name</th><th>Expiry</th><th>Mfg</th><th>Price</th><th>Qty</th><th>Shelf</th><th>Status</th><th>Action</th></tr></thead>
+                                <tbody id="medicinesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patients Section (added Payment Mode column) -->
+            <div id="patientsSection" class="content-section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold"><i class="fas fa-users me-2"></i>Patient Records</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal"><i class="fas fa-plus me-2"></i>Add Patient</button>
+                </div>
+                <!-- Filters -->
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="patientNameFilter" placeholder="Filter by name...">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="patientMobileFilter" placeholder="Filter by mobile...">
+                        </div>
+                    </div>
+                </div>
+                <!-- Patients Table (added Payment Mode) -->
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-table me-2"></i>Patient List</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="patientsTable">
+                                <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Mobile</th><th>Gender</th><th>Address</th><th>Purpose</th><th>Payment Mode</th><th>Date</th><th>Time</th><th>Paid</th><th>Due</th><th>Action</th></tr></thead>
+                                <tbody id="patientsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Billing Section (added Payment Mode) -->
+            <div id="billingSection" class="content-section" style="display: none;">
+                <h2 class="fw-bold mb-4"><i class="fas fa-file-invoice me-2"></i>Create Bill / Receipt</h2>
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card">
+                            <div class="card-header">New Patient Bill</div>
+                            <div class="card-body">
+                                <!-- Patient Search -->
+                                <div class="mb-4">
+                                    <label class="form-label">Search Existing Patient</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="patientSearch" placeholder="Type name or mobile...">
+                                        <button class="btn btn-outline-secondary" type="button" id="clearPatientSearch"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    <div id="patientSearchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></div>
+                                </div>
+
+                                <form id="billingForm">
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Patient Name</label>
+                                            <input type="text" class="form-control" id="billPatientName" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Age</label>
+                                            <input type="number" class="form-control" id="billPatientAge" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Gender</label>
+                                            <select class="form-select" id="billPatientGender">
+                                                <option>Male</option><option>Female</option><option>Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mobile</label>
+                                            <input type="text" class="form-control" id="billPatientMobile" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Address</label>
+                                            <input type="text" class="form-control" id="billPatientAddress" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Purpose</label>
+                                            <input type="text" class="form-control" id="billPurpose" placeholder="e.g., Checkup, Follow-up">
+                                        </div>
+                                        <!-- NEW: Payment Mode -->
+                                        <div class="col-12">
+                                            <label class="form-label">Payment Mode</label>
+                                            <select class="form-select" id="billPaymentMode">
+                                                <option value="Cash" selected>Cash</option>
+                                                <option value="Online">Online</option>
+                                                <option value="Not Paid">Not Paid</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <h5 class="mb-3">Add Medicines</h5>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control" id="medicineSearchInput" placeholder="Search medicine...">
+                                            <select class="form-select mt-2" id="medicineSelect" size="5">
+                                                <option value="">Select Medicine</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="number" class="form-control" id="medicineQty" placeholder="Qty" min="1" value="1">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <button type="button" class="btn btn-primary w-100" id="addMedicineToBill"><i class="fas fa-plus"></i> Add</button>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <span id="availableStock" class="badge bg-info text-dark p-2">Stock: -</span>
+                                        </div>
+                                    </div>
+
+                                    <table class="table table-bordered" id="billItemsTable">
+                                        <thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Total</th><th></th></tr></thead>
+                                        <tbody id="billItemsBody"></tbody>
+                                    </table>
+
+                                    <div class="row mt-4">
+                                        <div class="col-md-4">
+                                            <label>Total Amount</label>
+                                            <input type="text" class="form-control" id="billTotal" readonly>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Paid Amount</label>
+                                            <input type="number" class="form-control" id="billPaid" value="0">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label>Due Amount</label>
+                                            <input type="text" class="form-control" id="billDue" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 d-flex justify-content-end">
+                                        <button type="button" class="btn btn-success me-2" id="saveAndPrintBill"><i class="fas fa-print me-2"></i>Save & Print Receipt</button>
+                                        <button type="button" class="btn btn-secondary" id="resetBillForm">Reset</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Due Payments Section -->
+            <div id="dueSection" class="content-section" style="display: none;">
+                <h2 class="fw-bold mb-4"><i class="fas fa-credit-card me-2"></i>Due Payments</h2>
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="dueNameFilter" placeholder="Filter by name...">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="dueMobileFilter" placeholder="Filter by mobile...">
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#manualDueModal"><i class="fas fa-plus me-2"></i>Record Manual Due</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-table me-2"></i>Patients with Outstanding Dues</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="dueTable">
+                                <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>Total</th><th>Paid</th><th>Due</th><th>Date</th><th>Purpose</th><th>Action</th></tr></thead>
+                                <tbody id="dueTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden receipt print area -->
+        <div id="receipt-print-area" style="display: none;"></div>
+
+        <!-- Add Medicine Modal -->
+        <div class="modal fade" id="addMedicineModal" tabindex="-1">
+            <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title"><i class="fas fa-pills me-2"></i>Add Medicine</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="addMedicineForm">
+                        <div class="mb-3"><label class="form-label">Medicine Name</label><input type="text" class="form-control" id="medName" required></div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Expiry Date</label><input type="date" class="form-control" id="medExpiry" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Mfg Date</label><input type="date" class="form-control" id="medMfg" required></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Price (per unit)</label><input type="number" step="0.01" class="form-control" id="medPrice" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Quantity</label><input type="number" class="form-control" id="medQty" required></div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Shelf Number</label><input type="text" class="form-control" id="medShelf" required></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveMedicineBtn">Save Medicine</button>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- Add Patient Modal (added Payment Mode) -->
+        <div class="modal fade" id="addPatientModal" tabindex="-1">
+            <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Add Patient Visit</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="addPatientForm">
+                        <div class="mb-3"><label class="form-label">Full Name</label><input type="text" class="form-control" id="patName" required></div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Age</label><input type="number" class="form-control" id="patAge" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Gender</label><select class="form-select" id="patGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Mobile Number</label><input type="text" class="form-control" id="patMobile" required></div>
+                        <div class="mb-3"><label class="form-label">Address</label><input type="text" class="form-control" id="patAddress" required></div>
+                        <div class="mb-3"><label class="form-label">Purpose</label><input type="text" class="form-control" id="patPurpose" placeholder="e.g., Checkup"></div>
+                        <!-- NEW: Payment Mode -->
+                        <div class="mb-3">
+                            <label class="form-label">Payment Mode</label>
+                            <select class="form-select" id="patPaymentMode">
+                                <option value="Cash" selected>Cash</option>
+                                <option value="Online">Online</option>
+                                <option value="Not Paid">Not Paid</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="savePatientBtn">Save Patient</button>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- Edit Due Modal -->
+        <div class="modal fade" id="editDueModal" tabindex="-1">
+            <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title"><i class="fas fa-edit me-2"></i>Adjust Due Payment</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="editDuePatientId">
+                    <div class="mb-3"><label class="form-label">Patient Name</label><input type="text" class="form-control" id="editDueName" readonly></div>
+                    <div class="mb-3"><label class="form-label">Total Bill</label><input type="text" class="form-control" id="editDueTotal" readonly></div>
+                    <div class="mb-3"><label class="form-label">Current Paid</label><input type="number" class="form-control" id="editDuePaid" step="0.01"></div>
+                    <div class="mb-3"><label class="form-label">New Due</label><input type="text" class="form-control" id="editDueNewDue" readonly></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveDueEditBtn">Update Payment</button>
+                </div>
+            </div></div>
+        </div>
+
+        <!-- Manual Due Modal (optional: add payment mode if needed, but leave as is) -->
+        <div class="modal fade" id="manualDueModal" tabindex="-1">
+            <div class="modal-dialog"><div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title"><i class="fas fa-hand-holding-usd me-2"></i>Record Manual Due</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="manualDueForm">
+                        <div class="mb-3"><label class="form-label">Patient Name</label><input type="text" class="form-control" id="manualName" required></div>
+                        <div class="mb-3"><label class="form-label">Mobile</label><input type="text" class="form-control" id="manualMobile" required></div>
+                        <div class="mb-3"><label class="form-label">Total Amount</label><input type="number" class="form-control" id="manualTotal" step="0.01" required></div>
+                        <div class="mb-3"><label class="form-label">Paid Amount</label><input type="number" class="form-control" id="manualPaid" step="0.01" value="0"></div>
+                        <div class="mb-3"><label class="form-label">Purpose</label><input type="text" class="form-control" id="manualPurpose" placeholder="Reason for due"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveManualDueBtn">Save Due Record</button>
+                </div>
+            </div></div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ---------- Toast notification ----------
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = message;
+            toast.className = 'show ' + (type === 'success' ? 'toast-success' : 'toast-error');
+            setTimeout(() => {
+                toast.className = '';
+            }, 3000);
+        }
+
+        // ---------- Data ----------
+        let medicines = [];
+        let patients = [];
+        let nextMedicineId = 1;
+        let nextPatientId = 1;
+        let currentBillItems = []; // for billing cart
+
+        // Chart instances
+        let earningsChart, medicinesSoldChart, genderChart;
+
+        // Login check
+        const loginOverlay = document.getElementById('loginOverlay');
+        const mainApp = document.getElementById('mainApp');
+        // Password toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passInput = document.getElementById('adminPass');
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            if (user === 'arpan' && pass === 'arpan123') {
+                loginOverlay.style.display = 'none';
+                mainApp.style.display = 'block';
+                sessionStorage.setItem('loggedIn', 'true');
+                loadData(); // load data after login
+                showSection('dashboard'); // default to dashboard
+                initCharts();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        // Auto-login if session exists
+        if (sessionStorage.getItem('loggedIn') === 'true') {
+            loginOverlay.style.display = 'none';
+            mainApp.style.display = 'block';
+            loadData();
+            showSection('dashboard');
+            initCharts();
+        }
+
+        // Load from localStorage
+        function loadData() {
+            const storedMedicines = localStorage.getItem('medicines');
+            if (storedMedicines) {
+                medicines = JSON.parse(storedMedicines);
+                nextMedicineId = medicines.length ? Math.max(...medicines.map(m => m.id)) + 1 : 1;
+            }
+            const storedPatients = localStorage.getItem('patients');
+            if (storedPatients) {
+                patients = JSON.parse(storedPatients);
+                nextPatientId = patients.length ? Math.max(...patients.map(p => p.id)) + 1 : 1;
+            }
+        }
+        function saveMedicines() { localStorage.setItem('medicines', JSON.stringify(medicines)); }
+        function savePatients() { localStorage.setItem('patients', JSON.stringify(patients)); }
+
+        // Update dashboard summary cards
+        function updateDashboardSummary() {
+            const totalMedQty = medicines.reduce((sum, m) => sum + m.quantity, 0);
+            document.getElementById('totalMedicinesCount').innerText = totalMedQty;
+            const lifetimeEarnings = patients.reduce((sum, p) => sum + p.total, 0);
+            document.getElementById('totalEarningsLifetime').innerHTML = '₹' + lifetimeEarnings.toFixed(2);
+            document.getElementById('totalPatientsCount').innerText = patients.length;
+        }
+
+        // ---------- Render Functions ----------
+        function renderMedicines(filteredMedicines = null) {
+            const tbody = document.getElementById('medicinesTableBody');
+            const list = filteredMedicines || medicines;
+            const today = new Date().toISOString().split('T')[0];
+            tbody.innerHTML = list.map(m => {
+                const expired = m.expiryDate < today;
+                const lowUsage = m.quantity > (m.initialQuantity / 2);
+                let statusHtml = '', rowClass = '';
+                if (expired) { statusHtml = '<span class="badge-expired"><i class="fas fa-exclamation-circle me-1"></i>Expired</span>'; rowClass = 'expired-row'; }
+                else if (lowUsage) { statusHtml = '<span class="badge-lowusage"><i class="fas fa-thermometer-half me-1"></i>Low Usage</span>'; rowClass = 'lowusage-row'; }
+                return `<tr class="${rowClass}"><td>${m.id}</td><td>${m.name}</td><td>${m.expiryDate}</td><td>${m.mfgDate}</td><td>₹${m.price.toFixed(2)}</td><td>${m.quantity}</td><td>${m.shelf}</td><td>${statusHtml}</td><td><button class="btn btn-sm btn-outline-danger remove-medicine" data-id="${m.id}"><i class="fas fa-trash"></i></button></td></tr>`;
+            }).join('');
+            document.querySelectorAll('.remove-medicine').forEach(btn => btn.addEventListener('click', (e) => removeMedicine(parseInt(e.target.closest('button').dataset.id))));
+            updateDashboardSummary();
+        }
+
+        function renderPatients(filteredPatients = null) {
+            const tbody = document.getElementById('patientsTableBody');
+            const list = filteredPatients || patients;
+            tbody.innerHTML = list.map(p => `<tr>
+                <td>${p.id}</td><td>${p.name}</td><td>${p.age}</td><td>${p.mobile}</td><td>${p.gender}</td><td>${p.address}</td>
+                <td>${p.purpose || ''}</td>
+                <td>${p.paymentMode || 'Cash'}</td>
+                <td>${p.date}</td><td>${p.time}</td><td>₹${p.paid.toFixed(2)}</td><td>₹${p.due.toFixed(2)}</td>
+                <td><button class="btn btn-sm btn-outline-danger remove-patient" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>
+            </tr>`).join('');
+            document.querySelectorAll('.remove-patient').forEach(btn => btn.addEventListener('click', (e) => removePatient(parseInt(e.target.closest('button').dataset.id))));
+            updateDashboardSummary();
+        }
+
+        // Render due table
+        function renderDuePatients(filtered = null) {
+            const tbody = document.getElementById('dueTableBody');
+            let dueList = patients.filter(p => p.due > 0);
+            if (filtered) dueList = filtered;
+            const nameFilter = document.getElementById('dueNameFilter').value.toLowerCase();
+            const mobileFilter = document.getElementById('dueMobileFilter').value.toLowerCase();
+            if (nameFilter) dueList = dueList.filter(p => p.name.toLowerCase().includes(nameFilter));
+            if (mobileFilter) dueList = dueList.filter(p => p.mobile.includes(mobileFilter));
+
+            tbody.innerHTML = dueList.map(p => `<tr>
+                <td>${p.id}</td><td>${p.name}</td><td>${p.mobile}</td><td>₹${p.total.toFixed(2)}</td><td>₹${p.paid.toFixed(2)}</td><td>₹${p.due.toFixed(2)}</td>
+                <td>${p.date}</td><td>${p.purpose || ''}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning edit-due" data-id="${p.id}"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger remove-patient" data-id="${p.id}"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+            document.querySelectorAll('.edit-due').forEach(btn => btn.addEventListener('click', (e) => openEditDueModal(parseInt(e.target.closest('button').dataset.id))));
+            document.querySelectorAll('.remove-patient').forEach(btn => btn.addEventListener('click', (e) => removePatient(parseInt(e.target.closest('button').dataset.id))));
+            updateDashboardSummary();
+        }
+
+        // ---------- Medicine Functions ----------
+        function addMedicine(name, expiry, mfg, price, qty, shelf) {
+            medicines.push({ id: nextMedicineId++, name, expiryDate: expiry, mfgDate: mfg, price, quantity: qty, shelf, initialQuantity: qty });
+            saveMedicines(); renderMedicines(); updateMedicineDropdown(); updateAllCharts();
+            showToast('Medicine added successfully!');
+        }
+        function removeMedicine(id) { 
+            medicines = medicines.filter(m => m.id !== id); 
+            saveMedicines(); renderMedicines(); updateMedicineDropdown(); updateAllCharts(); 
+            showToast('Medicine removed successfully!');
+        }
+
+        // ---------- Patient Functions (added paymentMode) ----------
+        function addPatient(name, age, mobile, gender, address, purpose, paymentMode = 'Cash', total = 0, paid = 0, due = 0, medicinesList = []) {
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0];
+            patients.push({ 
+                id: nextPatientId++, 
+                name, age, mobile, gender, address, purpose, paymentMode,
+                date, time, medicines: medicinesList, total, paid, due 
+            });
+            savePatients(); renderPatients(); updateAllCharts(); renderDuePatients();
+            showToast('Patient added successfully!');
+        }
+        function removePatient(id) { 
+            patients = patients.filter(p => p.id !== id); 
+            savePatients(); renderPatients(); renderDuePatients(); updateAllCharts(); 
+            showToast('Patient removed successfully!');
+        }
+
+        // ---------- Filtering ----------
+        function filterMedicines() {
+            const nameFilter = document.getElementById('medicineNameFilter').value.toLowerCase();
+            const shelfFilter = document.getElementById('medicineShelfFilter').value.toLowerCase();
+            let filtered = medicines;
+            if (nameFilter) filtered = filtered.filter(m => m.name.toLowerCase().includes(nameFilter));
+            if (shelfFilter) filtered = filtered.filter(m => m.shelf.toLowerCase().includes(shelfFilter));
+            renderMedicines(filtered);
+        }
+        function filterPatients() {
+            const nameFilter = document.getElementById('patientNameFilter').value.toLowerCase();
+            const mobileFilter = document.getElementById('patientMobileFilter').value.toLowerCase();
+            let filtered = patients;
+            if (nameFilter) filtered = filtered.filter(p => p.name.toLowerCase().includes(nameFilter));
+            if (mobileFilter) filtered = filtered.filter(p => p.mobile.includes(mobileFilter));
+            renderPatients(filtered);
+        }
+
+        // ---------- Billing Helpers ----------
+        function updateMedicineDropdown(filterText = '') {
+            const select = document.getElementById('medicineSelect');
+            let options = '<option value="">Select Medicine</option>';
+            medicines.filter(m => m.name.toLowerCase().includes(filterText.toLowerCase())).forEach(m => {
+                options += `<option value="${m.id}" data-price="${m.price}" data-stock="${m.quantity}">${m.name} (Stock: ${m.quantity})</option>`;
+            });
+            select.innerHTML = options;
+        }
+
+        document.getElementById('medicineSearchInput').addEventListener('input', function(e) {
+            updateMedicineDropdown(e.target.value);
+        });
+
+        function updateAvailableStock() {
+            const select = document.getElementById('medicineSelect');
+            const selected = select.options[select.selectedIndex];
+            document.getElementById('availableStock').innerText = selected && selected.value ? `Stock: ${selected.dataset.stock}` : 'Stock: -';
+        }
+        document.getElementById('medicineSelect').addEventListener('change', updateAvailableStock);
+
+        // Patient search in billing
+        document.getElementById('patientSearch').addEventListener('input', function(e) {
+            const term = e.target.value.toLowerCase();
+            if (term.length < 1) { document.getElementById('patientSearchResults').innerHTML = ''; return; }
+            const matches = patients.filter(p => p.name.toLowerCase().includes(term) || p.mobile.includes(term)).slice(0, 5);
+            const resultsDiv = document.getElementById('patientSearchResults');
+            resultsDiv.innerHTML = matches.map(p => `<a href="#" class="list-group-item list-group-item-action" data-id="${p.id}">${p.name} (${p.mobile})</a>`).join('');
+            document.querySelectorAll('#patientSearchResults a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const id = parseInt(e.target.dataset.id);
+                    const patient = patients.find(p => p.id === id);
+                    if (patient) {
+                        document.getElementById('billPatientName').value = patient.name;
+                        document.getElementById('billPatientAge').value = patient.age;
+                        document.getElementById('billPatientGender').value = patient.gender;
+                        document.getElementById('billPatientMobile').value = patient.mobile;
+                        document.getElementById('billPatientAddress').value = patient.address;
+                        document.getElementById('billPurpose').value = patient.purpose || '';
+                        document.getElementById('billPaymentMode').value = patient.paymentMode || 'Cash';
+                    }
+                    resultsDiv.innerHTML = '';
+                    document.getElementById('patientSearch').value = '';
+                });
+            });
+        });
+        document.getElementById('clearPatientSearch').addEventListener('click', () => {
+            document.getElementById('patientSearch').value = '';
+            document.getElementById('patientSearchResults').innerHTML = '';
+        });
+
+        function addItemToBill() {
+            const select = document.getElementById('medicineSelect');
+            const medId = parseInt(select.value);
+            const qty = parseInt(document.getElementById('medicineQty').value);
+            if (!medId || qty < 1) return;
+            const medicine = medicines.find(m => m.id === medId);
+            if (!medicine) return;
+            if (qty > medicine.quantity) { alert('Insufficient stock!'); return; }
+            const existing = currentBillItems.find(item => item.medId === medId);
+            if (existing) { existing.qty += qty; existing.total = existing.qty * existing.price; }
+            else { currentBillItems.push({ medId, name: medicine.name, qty, price: medicine.price, total: qty * medicine.price }); }
+            renderBillItems(); updateBillTotals();
+        }
+        function renderBillItems() {
+            const tbody = document.getElementById('billItemsBody');
+            tbody.innerHTML = currentBillItems.map((item, index) => `<tr><td>${item.name}</td><td>${item.qty}</td><td>₹${item.price.toFixed(2)}</td><td>₹${item.total.toFixed(2)}</td><td><button class="btn btn-sm btn-danger remove-bill-item" data-index="${index}"><i class="fas fa-times"></i></button></td></tr>`).join('');
+            document.querySelectorAll('.remove-bill-item').forEach(btn => btn.addEventListener('click', (e) => { currentBillItems.splice(parseInt(e.target.closest('button').dataset.index), 1); renderBillItems(); updateBillTotals(); }));
+        }
+        function updateBillTotals() {
+            const total = currentBillItems.reduce((sum, item) => sum + item.total, 0);
+            document.getElementById('billTotal').value = total.toFixed(2);
+            const paid = parseFloat(document.getElementById('billPaid').value) || 0;
+            document.getElementById('billDue').value = (total - paid).toFixed(2);
+        }
+
+        // Save bill with enhanced receipt
+        function saveAndPrintBill() {
+            const name = document.getElementById('billPatientName').value.trim();
+            const age = document.getElementById('billPatientAge').value;
+            const mobile = document.getElementById('billPatientMobile').value.trim();
+            const gender = document.getElementById('billPatientGender').value;
+            const address = document.getElementById('billPatientAddress').value.trim();
+            const purpose = document.getElementById('billPurpose').value.trim();
+            const paymentMode = document.getElementById('billPaymentMode').value; // new
+            const paid = parseFloat(document.getElementById('billPaid').value) || 0;
+            const total = parseFloat(document.getElementById('billTotal').value) || 0;
+            const due = total - paid;
+            if (!name || !age || !mobile || !address) { alert('Please fill all patient details'); return; }
+            if (currentBillItems.length === 0) { alert('No medicines added to bill'); return; }
+
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0];
+            const newPatient = {
+                id: nextPatientId++,
+                name, age, mobile, gender, address, purpose, paymentMode,
+                date, time,
+                medicines: currentBillItems.map(item => ({ name: item.name, qty: item.qty, price: item.price, total: item.total })),
+                total, paid, due
+            };
+            patients.push(newPatient);
+            savePatients();
+
+            currentBillItems.forEach(item => {
+                const med = medicines.find(m => m.id === item.medId);
+                if (med) med.quantity -= item.qty;
+            });
+            saveMedicines();
+            updateMedicineDropdown();
+
+            // Enhanced receipt HTML
+            const receiptHTML = `
+                <div class="receipt-compact">
+                    <h2>Arpan Pharmacy</h2>
+                    <div class="store-details">
+                        Paraul-03, Mahottari, Nepal<br>
+                        Ph: +9779817806445<br>
+                        rkapari614@gmail.com
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>Date:</strong> ${date} ${time}<br>
+                        <strong>Name:</strong> ${name}<br>
+                        <strong>Age:</strong> ${age} | <strong>Gender:</strong> ${gender}<br>
+                        <strong>Mobile:</strong> ${mobile}<br>
+                        <strong>Address:</strong> ${address}<br>
+                        <strong>Payment:</strong> ${paymentMode}<br>
+                        ${purpose ? `<strong>Purpose:</strong> ${purpose}` : ''}
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+                        </thead>
+                        <tbody>
+                            ${currentBillItems.map(item => `<tr><td>${item.name}</td><td>${item.qty}</td><td>₹${item.price.toFixed(2)}</td><td>₹${item.total.toFixed(2)}</td></tr>`).join('')}
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; text-align: right; border-top: 2px solid #333; padding-top: 5px;">
+                        <div><strong>Total: ₹${total.toFixed(2)}</strong></div>
+                        <div>Paid: ₹${paid.toFixed(2)}</div>
+                        <div>Due: ₹${due.toFixed(2)}</div>
+                    </div>
+                    <div class="signature">
+                        <div>Authorized Sign</div>
+                    </div>
+                    <div class="footer-thanks">Thank you, visit again!</div>
+                </div>
+            `;
+
+            const printArea = document.getElementById('receipt-print-area');
+            printArea.style.display = 'block';
+            printArea.innerHTML = receiptHTML;
+            window.print();
+            printArea.style.display = 'none';
+
+            resetBillForm();
+            renderPatients(); renderDuePatients(); updateAllCharts();
+            showToast('Bill saved and receipt printed successfully!');
+        }
+
+        function resetBillForm() {
+            document.getElementById('billingForm').reset();
+            currentBillItems = []; renderBillItems(); updateBillTotals();
+            document.getElementById('billTotal').value = ''; document.getElementById('billDue').value = '';
+        }
+
+        // ---------- Due Management ----------
+        function openEditDueModal(patientId) {
+            const patient = patients.find(p => p.id === patientId);
+            if (!patient) return;
+            document.getElementById('editDuePatientId').value = patient.id;
+            document.getElementById('editDueName').value = patient.name;
+            document.getElementById('editDueTotal').value = patient.total.toFixed(2);
+            document.getElementById('editDuePaid').value = patient.paid;
+            document.getElementById('editDueNewDue').value = (patient.total - patient.paid).toFixed(2);
+            new bootstrap.Modal(document.getElementById('editDueModal')).show();
+        }
+        document.getElementById('editDuePaid').addEventListener('input', function() {
+            const total = parseFloat(document.getElementById('editDueTotal').value) || 0;
+            const paid = parseFloat(this.value) || 0;
+            document.getElementById('editDueNewDue').value = (total - paid).toFixed(2);
+        });
+        document.getElementById('saveDueEditBtn').addEventListener('click', function() {
+            const id = parseInt(document.getElementById('editDuePatientId').value);
+            const patient = patients.find(p => p.id === id);
+            if (!patient) return;
+            const newPaid = parseFloat(document.getElementById('editDuePaid').value) || 0;
+            patient.paid = newPaid;
+            patient.due = patient.total - newPaid;
+            savePatients();
+            renderPatients(); renderDuePatients(); updateAllCharts();
+            bootstrap.Modal.getInstance(document.getElementById('editDueModal')).hide();
+            showToast('Due payment updated successfully!');
+        });
+
+        // Manual due record
+        document.getElementById('saveManualDueBtn').addEventListener('click', function() {
+            const name = document.getElementById('manualName').value.trim();
+            const mobile = document.getElementById('manualMobile').value.trim();
+            const total = parseFloat(document.getElementById('manualTotal').value) || 0;
+            const paid = parseFloat(document.getElementById('manualPaid').value) || 0;
+            const purpose = document.getElementById('manualPurpose').value.trim();
+            if (!name || !mobile || total <= 0) { alert('Please fill required fields'); return; }
+            const due = total - paid;
+            const now = new Date();
+            const date = now.toISOString().split('T')[0];
+            const time = now.toTimeString().split(' ')[0];
+            patients.push({
+                id: nextPatientId++,
+                name, age: 0, mobile, gender: 'Other', address: '', purpose, paymentMode: 'Not Paid',
+                date, time, medicines: [], total, paid, due
+            });
+            savePatients();
+            renderPatients(); renderDuePatients(); updateAllCharts();
+            bootstrap.Modal.getInstance(document.getElementById('manualDueModal')).hide();
+            document.getElementById('manualDueForm').reset();
+            showToast('Manual due record saved successfully!');
+        });
+
+        // ---------- Dashboard Charts ----------
+        function initCharts() {
+            const ctxEarnings = document.getElementById('earningsChart').getContext('2d');
+            const ctxMedicines = document.getElementById('medicinesSoldChart').getContext('2d');
+            const ctxGender = document.getElementById('genderChart').getContext('2d');
+            earningsChart = new Chart(ctxEarnings, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Earnings (₹)', data: [], borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,0.1)', fill: true, tension: 0.3 }] },
+                options: { animation: { duration: 1000 }, responsive: true, maintainAspectRatio: false }
+            });
+            medicinesSoldChart = new Chart(ctxMedicines, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Medicines Sold (Qty)', data: [], borderColor: '#198754', backgroundColor: 'rgba(25,135,84,0.1)', fill: true, tension: 0.3 }] },
+                options: { animation: { duration: 1000 }, responsive: true, maintainAspectRatio: false }
+            });
+            genderChart = new Chart(ctxGender, {
+                type: 'pie',
+                data: { labels: ['Male', 'Female', 'Other'], datasets: [{ data: [0,0,0], backgroundColor: ['#0d6efd', '#d63384', '#6c757d'] }] },
+                options: { animation: { duration: 1000 }, responsive: true, maintainAspectRatio: false }
+            });
+            updateAllCharts();
+        }
+
+        function getDateRangeFromPreset(preset) {
+            const now = new Date();
+            let from = new Date(now), to = new Date(now);
+            if (preset === '24h') from.setDate(now.getDate() - 1);
+            else if (preset === '7d') from.setDate(now.getDate() - 7);
+            else if (preset === '1m') from.setMonth(now.getMonth() - 1);
+            else if (preset === '3m') from.setMonth(now.getMonth() - 3);
+            else if (preset === '6m') from.setMonth(now.getMonth() - 6);
+            else if (preset === '1y') from.setFullYear(now.getFullYear() - 1);
+            else if (preset === 'custom') {
+                from = new Date(document.getElementById('dashboardFromDate').value);
+                to = new Date(document.getElementById('dashboardToDate').value);
+                // Validate custom dates
+                if (isNaN(from) || isNaN(to)) {
+                    alert('Please select both From and To dates for custom range. Using last 7 days as fallback.');
+                    from = new Date(now); from.setDate(now.getDate() - 7);
+                    to = new Date(now);
+                }
+            }
+            return { from: from.toISOString().split('T')[0], to: to.toISOString().split('T')[0] };
+        }
+
+        function updateAllCharts() {
+            if (!earningsChart) return;
+            const preset = document.getElementById('dashboardDatePreset').value;
+            const { from, to } = getDateRangeFromPreset(preset);
+            // Filter patients by date range
+            const filteredPatients = patients.filter(p => p.date >= from && p.date <= to);
+            // Aggregate by date
+            const dateMap = new Map();
+            filteredPatients.forEach(p => {
+                if (!dateMap.has(p.date)) dateMap.set(p.date, { earnings: 0, medQty: 0 });
+                const data = dateMap.get(p.date);
+                data.earnings += p.total;
+                p.medicines.forEach(m => data.medQty += m.qty);
+            });
+            const sortedDates = Array.from(dateMap.keys()).sort();
+            const earningsData = sortedDates.map(d => dateMap.get(d).earnings);
+            const medQtyData = sortedDates.map(d => dateMap.get(d).medQty);
+
+            earningsChart.data.labels = sortedDates;
+            earningsChart.data.datasets[0].data = earningsData;
+            earningsChart.update();
+
+            medicinesSoldChart.data.labels = sortedDates;
+            medicinesSoldChart.data.datasets[0].data = medQtyData;
+            medicinesSoldChart.update();
+
+            // Gender distribution
+            const genderCounts = [0,0,0];
+            filteredPatients.forEach(p => {
+                if (p.gender === 'Male') genderCounts[0]++;
+                else if (p.gender === 'Female') genderCounts[1]++;
+                else genderCounts[2]++;
+            });
+            genderChart.data.datasets[0].data = genderCounts;
+            genderChart.update();
+
+            // Also update summary cards
+            updateDashboardSummary();
+        }
+
+        // ---------- Tab Switching ----------
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionId + 'Section').style.display = 'block';
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelector(`.navbar-nav .nav-link[data-section="${sectionId}"]`).classList.add('active');
+
+            if (sectionId === 'medicines') renderMedicines();
+            if (sectionId === 'patients') renderPatients();
+            if (sectionId === 'billing') { updateMedicineDropdown(); resetBillForm(); }
+            if (sectionId === 'due') renderDuePatients();
+            if (sectionId === 'dashboard') updateAllCharts();
+        }
+
+        // ---------- Real-time Clock ----------
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClock').innerHTML = `<i class="far fa-clock me-1"></i>${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+        }
+        setInterval(updateClock, 1000);
+
+        // ---------- Event Listeners ----------
+        document.addEventListener('DOMContentLoaded', () => {
+            // If already logged in, data loaded earlier. Otherwise login overlay.
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                loginOverlay.style.display = 'none';
+                mainApp.style.display = 'block';
+                loadData();
+                showSection('dashboard');
+                initCharts();
+            }
+
+            // Tab navigation
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection(e.target.closest('a').dataset.section);
+                });
+            });
+
+            // Add medicine
+            document.getElementById('saveMedicineBtn').addEventListener('click', () => {
+                const name = document.getElementById('medName').value.trim();
+                const expiry = document.getElementById('medExpiry').value;
+                const mfg = document.getElementById('medMfg').value;
+                const price = parseFloat(document.getElementById('medPrice').value);
+                const qty = parseInt(document.getElementById('medQty').value);
+                const shelf = document.getElementById('medShelf').value.trim();
+                if (!name || !expiry || !mfg || isNaN(price) || isNaN(qty) || !shelf) { alert('Please fill all fields'); return; }
+                addMedicine(name, expiry, mfg, price, qty, shelf);
+                bootstrap.Modal.getInstance(document.getElementById('addMedicineModal')).hide();
+                document.getElementById('addMedicineForm').reset();
+            });
+
+            // Add patient with purpose and payment mode
+            document.getElementById('savePatientBtn').addEventListener('click', () => {
+                const name = document.getElementById('patName').value.trim();
+                const age = parseInt(document.getElementById('patAge').value);
+                const mobile = document.getElementById('patMobile').value.trim();
+                const gender = document.getElementById('patGender').value;
+                const address = document.getElementById('patAddress').value.trim();
+                const purpose = document.getElementById('patPurpose').value.trim();
+                const paymentMode = document.getElementById('patPaymentMode').value;
+                if (!name || isNaN(age) || !mobile || !address) { alert('Please fill all fields'); return; }
+                addPatient(name, age, mobile, gender, address, purpose, paymentMode);
+                bootstrap.Modal.getInstance(document.getElementById('addPatientModal')).hide();
+                document.getElementById('addPatientForm').reset();
+            });
+
+            // Filters
+            document.getElementById('medicineNameFilter').addEventListener('input', filterMedicines);
+            document.getElementById('medicineShelfFilter').addEventListener('input', filterMedicines);
+            document.getElementById('patientNameFilter').addEventListener('input', filterPatients);
+            document.getElementById('patientMobileFilter').addEventListener('input', filterPatients);
+            document.getElementById('dueNameFilter').addEventListener('input', () => renderDuePatients());
+            document.getElementById('dueMobileFilter').addEventListener('input', () => renderDuePatients());
+
+            // Low usage / expired
+            document.getElementById('showLowUsageBtn').addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                renderMedicines(medicines.filter(m => m.quantity > (m.initialQuantity / 2) && m.expiryDate >= today));
+            });
+            document.getElementById('showExpiredBtn').addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                renderMedicines(medicines.filter(m => m.expiryDate < today));
+            });
+
+            // Billing
+            document.getElementById('addMedicineToBill').addEventListener('click', addItemToBill);
+            document.getElementById('billPaid').addEventListener('input', updateBillTotals);
+            document.getElementById('saveAndPrintBill').addEventListener('click', saveAndPrintBill);
+            document.getElementById('resetBillForm').addEventListener('click', resetBillForm);
+
+            // Dashboard filter apply
+            document.getElementById('applyDashboardFilter').addEventListener('click', updateAllCharts);
+            document.getElementById('dashboardDatePreset').addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    document.getElementById('dashboardFromDate').disabled = false;
+                    document.getElementById('dashboardToDate').disabled = false;
+                } else {
+                    document.getElementById('dashboardFromDate').disabled = true;
+                    document.getElementById('dashboardToDate').disabled = true;
+                    updateAllCharts();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
